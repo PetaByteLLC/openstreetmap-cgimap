@@ -10,6 +10,7 @@
 #include "cgimap/api06/map_handler.hpp"
 #include "cgimap/http.hpp"
 #include "cgimap/request_helpers.hpp"
+#include "cgimap/request_context.hpp"
 #include "cgimap/options.hpp"
 
 #include <fmt/core.h>
