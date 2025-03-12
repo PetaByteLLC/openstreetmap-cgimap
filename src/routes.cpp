@@ -230,9 +230,10 @@ routes::routes()
 
   {
     using namespace api06;
-    r->GET<map_handler>(root_ / "map")
+    r->
       .GET<node_ways_handler>(root_ / "node" / osm_id_ / "ways")
       .GET<node_relations_handler>(root_ / "node" / osm_id_ / "relations")
+      .POST<map_handler>(root_ / "map")
 
     // make sure that *_version_handler is listed before matching *_handler
       .GET<node_history_handler>(root_ / "node" / osm_id_ / "history")
