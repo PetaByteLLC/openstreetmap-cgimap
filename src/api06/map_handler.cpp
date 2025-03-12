@@ -65,8 +65,7 @@ std::string map_handler::log_name() const {
           bounds.minlat, bounds.maxlon, bounds.maxlat));
 }
 
-responder_ptr_t map_handler::responder(data_selection &x,
-                                      const RequestContext& req_ctx) const {
+responder_ptr_t map_handler::responder(data_selection &x) const {
   return std::make_unique<map_responder>(mime_type, bounds, x, req_ctx);
 }
 
