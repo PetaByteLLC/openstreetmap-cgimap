@@ -66,11 +66,11 @@ std::string map_handler::log_name() const {
 }
 
 responder_ptr_t map_handler::responder(data_selection &x) const {
-  auto user_id = req_ctx.user.user_id;
-  if (!user_id) {
+  if (!req_ctx.user) {
     throw http::bad_request("You must be logged in to use this feature.");
   }
-  return std::make_unique<map_responder>(mime_type, bounds, x, *user_id);
+  auto user_id = req_ctx.user->user_id;
+  return std::make_unique<map_responder>(mime_type, bounds, x, user_id);
 }
 
 
