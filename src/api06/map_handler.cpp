@@ -42,22 +42,9 @@ map_responder::map_responder(mime::type mt, bbox b, data_selection &x, osm_user_
   }
 }
 
-map_handler::map_handler(request &req, const RequestContext context) : bounds(validate_request(req)), req_ctx(context) {
-  // map calls typically have a Content-Disposition header saying that
-  // what's coming back is an attachment.
-  //
-  // Content-Disposition should be only returned to the browser, in case the
-  // node extraction does not exceed the maximum number of nodes in a bounding box.
-  //
-  // Sending this header even for HTTP 400 Bad request errors is causing lots
-  // of confusion to users, as most browsers will only show the following meaningless
-  // error message:
-  //
-  // The webpage at ... might be temporarily down or it may have
-  // moved permanently to a new web address.
-  //
-  // ERR_INVALID_RESPONSE
-  //
+map_handler::map_handler(request &req, const RequestContext& context) 
+  : bounds(validate_request(req)), req_ctx(context) {
+
   req.add_success_header("Content-Disposition", "attachment; filename=\"map.osm\"");
 }
 
@@ -71,7 +58,7 @@ responder_ptr_t map_handler::responder(data_selection &x) const {
     throw http::bad_request("You must be logged in to use this feature.");
   }
   auto user_id = req_ctx.user->id;
-  return std::make_unique<map_responder>(mime_type, bounds, x, user_id);
+  return responder_ptr_t(new map_responder(mime_type, bounds, x, user_id));
 }
 
 
