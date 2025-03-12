@@ -20,10 +20,20 @@
 
 namespace api06 {
 
-map_responder::map_responder(mime::type mt, bbox b, data_selection &x, osm_user_id_t user_id)
+map_responder::map_responder(mime::type mt, 
+                            bbox b, 
+                            data_selection &x, 
+                            const RequestContext& req_ctx)
     : osm_current_responder(mt, x, std::optional<bbox>(b)) {
   // create temporary tables of nodes, ways and relations which
   // are in or used by elements in the bbox
+
+  if (!req_ctx.user) {
+    throw http::unauthorized("You must be logged in to use this feature.");
+  }
+  auto user_id = req_ctx.user->id;
+  logger::message(fmt::format("User id {:d}", user_id));
+
   uint32_t num_nodes = sel.select_nodes_from_bbox(b, global_settings::get_map_max_nodes());
 
   if (num_nodes > global_settings::get_map_max_nodes()) {
@@ -42,9 +52,7 @@ map_responder::map_responder(mime::type mt, bbox b, data_selection &x, osm_user_
   }
 }
 
-map_handler::map_handler(request &req, const RequestContext& context) 
-  : bounds(validate_request(req)), req_ctx(context) {
-
+map_handler::map_handler(request &req) : bounds(validate_request(req)) {
   req.add_success_header("Content-Disposition", "attachment; filename=\"map.osm\"");
 }
 
@@ -53,12 +61,9 @@ std::string map_handler::log_name() const {
           bounds.minlat, bounds.maxlon, bounds.maxlat));
 }
 
-responder_ptr_t map_handler::responder(data_selection &x) const {
-  if (!req_ctx.user) {
-    throw http::bad_request("You must be logged in to use this feature.");
-  }
-  auto user_id = req_ctx.user->id;
-  return responder_ptr_t(new map_responder(mime_type, bounds, x, user_id));
+responder_ptr_t map_handler::responder(data_selection &x,
+                                      const RequestContext& req_ctx) const {
+  std::make_unique<map_responder>(mime_type, bounds, x, req_ctx);
 }
 
 

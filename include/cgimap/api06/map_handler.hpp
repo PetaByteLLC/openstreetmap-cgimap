@@ -22,19 +22,21 @@ namespace api06 {
 
 class map_responder : public osm_current_responder {
 public:
-  map_responder(mime::type, bbox, data_selection &, osm_user_id_t user_id);
+  map_responder(mime::type, 
+                bbox, 
+                data_selection &, 
+                const RequestContext& req_ctx);
 };
 
 class map_handler : public handler {
 public:
   explicit map_handler(request &req);
-  map_handler(request &req, const RequestContext context);
   std::string log_name() const override;
-  responder_ptr_t responder(data_selection &x) const override;
+  responder_ptr_t responder(data_selection &x,
+                            const RequestContext& req_ctx) const override;
 
 private:
   bbox bounds;
-  RequestContext req_ctx;
 
   static bbox validate_request(const request &req);
 };
