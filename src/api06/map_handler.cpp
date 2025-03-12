@@ -41,7 +41,7 @@ map_responder::map_responder(mime::type mt, bbox b, data_selection &x, osm_user_
   }
 }
 
-map_handler::map_handler(request &req, const RequestContext context) : bounds(validate_request(req), req_ctx(context)) {
+map_handler::map_handler(request &req, const RequestContext context) : bounds(validate_request(req)), req_ctx(context) {
   // map calls typically have a Content-Disposition header saying that
   // what's coming back is an attachment.
   //
@@ -66,7 +66,7 @@ std::string map_handler::log_name() const {
 }
 
 responder_ptr_t map_handler::responder(data_selection &x) const {
-  auto user_id = req_ctx.user_id;
+  auto user_id = req_ctx.user.user_id;
   if (!user_id) {
     throw http::bad_request("You must be logged in to use this feature.");
   }
