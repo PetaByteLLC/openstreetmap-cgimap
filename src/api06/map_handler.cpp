@@ -28,11 +28,11 @@ map_responder::map_responder(mime::type mt,
   // create temporary tables of nodes, ways and relations which
   // are in or used by elements in the bbox
 
-  if (!req_ctx.user) {
-    throw http::unauthorized("You must be logged in to use this feature.");
-  }
-  auto user_id = req_ctx.user->id;
-  logger::message(fmt::format("User id {:d}", user_id));
+  // if (!req_ctx.user) {
+  //   throw http::unauthorized("You must be logged in to use this feature.");
+  // }
+  // auto user_id = req_ctx.user->id;
+  // logger::message(fmt::format("User id {:d}", user_id));
 
   uint32_t num_nodes = sel.select_nodes_from_bbox(b, global_settings::get_map_max_nodes());
 
@@ -52,7 +52,11 @@ map_responder::map_responder(mime::type mt,
   }
 }
 
-map_handler::map_handler(request &req) : bounds(validate_request(req)) {
+map_handler::map_handler(request &req) : map_handler(req, RequestContext{req}) {
+}
+
+map_handler::map_handler(request &req, const RequestContext& req_ctx) 
+    : bounds(validate_request(req)), req_ctx(req_ctx) {
   req.add_success_header("Content-Disposition", "attachment; filename=\"map.osm\"");
 }
 
@@ -63,7 +67,7 @@ std::string map_handler::log_name() const {
 
 responder_ptr_t map_handler::responder(data_selection &x,
                                       const RequestContext& req_ctx) const {
-  std::make_unique<map_responder>(mime_type, bounds, x, req_ctx);
+  return std::make_unique<map_responder>(mime_type, bounds, x, req_ctx);
 }
 
 

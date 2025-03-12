@@ -31,12 +31,13 @@ public:
 class map_handler : public handler {
 public:
   explicit map_handler(request &req);
+  map_handler(request &req, const RequestContext& req_ctx);
   std::string log_name() const override;
-  responder_ptr_t responder(data_selection &x,
-                            const RequestContext& req_ctx) const override;
+  responder_ptr_t responder(data_selection &x, const RequestContext& req_ctx) const override;
 
 private:
   bbox bounds;
+  RequestContext req_ctx;
 
   static bbox validate_request(const request &req);
 };
