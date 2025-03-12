@@ -19,7 +19,7 @@
 
 namespace api06 {
 
-map_responder::map_responder(mime::type mt, bbox b, data_selection &x)
+map_responder::map_responder(mime::type mt, bbox b, data_selection &x, osm_user_id_t user_id)
     : osm_current_responder(mt, x, std::optional<bbox>(b)) {
   // create temporary tables of nodes, ways and relations which
   // are in or used by elements in the bbox
@@ -41,7 +41,7 @@ map_responder::map_responder(mime::type mt, bbox b, data_selection &x)
   }
 }
 
-map_handler::map_handler(request &req) : bounds(validate_request(req)) {
+map_handler::map_handler(request &req, const RequestContext context) : bounds(validate_request(req), req_ctx(context)) {
   // map calls typically have a Content-Disposition header saying that
   // what's coming back is an attachment.
   //
@@ -66,7 +66,11 @@ std::string map_handler::log_name() const {
 }
 
 responder_ptr_t map_handler::responder(data_selection &x) const {
-  return std::make_unique<map_responder>(mime_type, bounds, x);
+  auto user_id = req_ctx.user_id;
+  if (!user_id) {
+    throw http::bad_request("You must be logged in to use this feature.");
+  }
+  return std::make_unique<map_responder>(mime_type, bounds, x, *user_id);
 }
 
 
