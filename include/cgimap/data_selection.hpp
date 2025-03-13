@@ -84,6 +84,8 @@ public:
   /// max_nodes
   virtual int select_nodes_from_bbox(const bbox &bounds, int max_nodes) = 0;
 
+  virtual int select_nodes_from_bbox_auth(const bbox &bounds, int max_nodes, const osm_user_id_t user_id) = 0;
+
   /// selects the node members of any already selected relations
   virtual void select_nodes_from_relations() = 0;
 

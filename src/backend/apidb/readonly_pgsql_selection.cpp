@@ -442,6 +442,39 @@ int readonly_pgsql_selection::select_nodes_from_bbox(const bbox &bounds,
       sel_nodes);
 }
 
+int readonly_pgsql_selection::select_nodes_from_bbox_auth(const bbox &bounds,
+                                                          int max_nodes,
+                                                          const osm_user_id_t user_id) {
+const std::vector<tile_id_t> tiles = tiles_for_area(
+bounds.minlat, bounds.minlon, bounds.maxlat, bounds.maxlon);
+
+// select nodes with bbox
+m.prepare("visible_node_in_bbox",
+R"(SELECT id
+FROM current_nodes cn
+JOIN changesets c ON c.id = cn.changeset
+WHERE cn.tile = ANY($1)
+AND cn.latitude BETWEEN $2 AND $3
+AND cn.longitude BETWEEN $4 AND $5
+AND cn.visible = true
+AND c.user_id = $7
+LIMIT $6)"_M);
+
+// hack around problem with postgres' statistics, which was
+// making it do seq scans all the time on smaug...
+m.exec("set enable_mergejoin=false");
+m.exec("set enable_hashjoin=false");
+
+return insert_results(
+m.exec_prepared("visible_node_in_bbox", tiles,
+int(bounds.minlat * global_settings::get_scale()),
+int(bounds.maxlat * global_settings::get_scale()),
+int(bounds.minlon * global_settings::get_scale()),
+int(bounds.maxlon * global_settings::get_scale()),
+(max_nodes + 1)),
+sel_nodes);
+}
+
 void readonly_pgsql_selection::select_nodes_from_relations() {
   logger::message("Filling sel_nodes (from relations)");
 

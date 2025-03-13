@@ -28,13 +28,7 @@ map_responder::map_responder(mime::type mt,
   // create temporary tables of nodes, ways and relations which
   // are in or used by elements in the bbox
 
-  // if (!req_ctx.user) {
-  //   throw http::unauthorized("You must be logged in to use this feature.");
-  // }
-  // auto user_id = req_ctx.user->id;
-  // logger::message(fmt::format("User id {:d}", user_id));
-
-  uint32_t num_nodes = sel.select_nodes_from_bbox(b, global_settings::get_map_max_nodes());
+  uint32_t num_nodes = sel.select_nodes_from_bbox_auth(b, global_settings::get_map_max_nodes(), req_ctx.user->id);
 
   if (num_nodes > global_settings::get_map_max_nodes()) {
     throw http::bad_request(
