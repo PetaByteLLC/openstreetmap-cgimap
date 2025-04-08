@@ -43,6 +43,7 @@ map_responder::map_responder(mime::type mt,
     sel.select_relations_from_ways();
     sel.select_relations_from_nodes();
     sel.select_relations_from_relations();
+    sel.select_relations_from_relations();
   }
 }
 
